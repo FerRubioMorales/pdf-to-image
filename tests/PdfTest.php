@@ -1,11 +1,11 @@
 <?php
 
-namespace Spatie\PdfToImage\Test;
+namespace Bnb\PdfToImage\Test;
 
-use Spatie\PdfToImage\Pdf;
-use Spatie\PdfToImage\Exceptions\InvalidFormat;
-use Spatie\PdfToImage\Exceptions\PdfDoesNotExist;
-use Spatie\PdfToImage\Exceptions\PageDoesNotExist;
+use Bnb\PdfToImage\Pdf;
+use Bnb\PdfToImage\Exceptions\InvalidFormat;
+use Bnb\PdfToImage\Exceptions\PdfDoesNotExist;
+use Bnb\PdfToImage\Exceptions\PageDoesNotExist;
 
 class PdfTest extends \PHPUnit_Framework_TestCase
 {
@@ -84,7 +84,7 @@ class PdfTest extends \PHPUnit_Framework_TestCase
     /** @test */
     public function it_will_accept_a_specified_file_type_and_convert_to_it()
     {
-        $pdf = new pdf($this->testFile);
+        $pdf = new Pdf($this->testFile);
 
         $pdf->setOutputFormat('png');
 

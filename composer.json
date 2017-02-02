@@ -1,20 +1,19 @@
 {
-    "name": "spatie/pdf-to-image",
-    "description": "Convert a pdf to an image",
+    "name": "bnbwebexpertise/pdf-to-image",
+    "description": "Convert a pdf to an image with Imagick extension. Forked from spatie/pdf-to-image",
     "keywords": [
-        "spatie",
+        "bnbwebexpertise",
         "pdf-to-image",
         "pdf",
         "convert",
         "image"
     ],
-    "homepage": "https://github.com/spatie/pdf-to-image",
+    "homepage": "https://github.com/bnbwebexpertise/pdf-to-image",
     "license": "MIT",
     "authors": [
         {
-            "name": "Freek Van der Herten",
-            "email": "freek@spatie.be",
-            "homepage": "https://spatie.be",
+            "name": "Jeremy Gaulin",
+            "email": "jeremy@bnb.re",
             "role": "Developer"
         }
     ],
@@ -27,12 +26,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Spatie\\PdfToImage\\": "src"
+            "Bnb\\PdfToImage\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Spatie\\PdfToImage\\Test\\": "tests"
+            "Bnb\\PdfToImage\\Test\\": "tests"
         }
     },
     "scripts": {

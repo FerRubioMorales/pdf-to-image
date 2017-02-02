@@ -1,10 +1,10 @@
 <?php
 
-namespace Spatie\PdfToImage;
+namespace Bnb\PdfToImage;
 
-use Spatie\PdfToImage\Exceptions\InvalidFormat;
-use Spatie\PdfToImage\Exceptions\PdfDoesNotExist;
-use Spatie\PdfToImage\Exceptions\PageDoesNotExist;
+use Bnb\PdfToImage\Exceptions\InvalidFormat;
+use Bnb\PdfToImage\Exceptions\PdfDoesNotExist;
+use Bnb\PdfToImage\Exceptions\PageDoesNotExist;
 
 class Pdf
 {
@@ -18,18 +18,24 @@ class Pdf
 
     protected $validOutputFormats = ['jpg', 'jpeg', 'png'];
 
+    protected $settings;
+
+
     /**
-     * @param string $pdfFile The path to the pdffile.
+     * @param string   $pdfFile The path to the pdffile.
      *
-     * @throws \Spatie\PdfToImage\Exceptions\PdfDoesNotExist
+     * @param callable $settings A callback that takes the Imagick object as parameter and returns it
+     *
+     * @throws PdfDoesNotExist
      */
-    public function __construct($pdfFile)
+    public function __construct($pdfFile, callable $settings = null)
     {
         if (! file_exists($pdfFile)) {
             throw new PdfDoesNotExist();
         }
 
         $this->pdfFile = $pdfFile;
+        $this->settings = $settings;
     }
 
     /**
@@ -53,7 +59,7 @@ class Pdf
      *
      * @return $this
      *
-     * @throws \Spatie\PdfToImage\Exceptions\InvalidFormat
+     * @throws \Bnb\PdfToImage\Exceptions\InvalidFormat
      */
     public function setOutputFormat($outputFormat)
     {
@@ -85,7 +91,7 @@ class Pdf
      *
      * @return $this
      *
-     * @throws \Spatie\PdfToImage\Exceptions\PageDoesNotExist
+     * @throws \Bnb\PdfToImage\Exceptions\PageDoesNotExist
      */
     public function setPage($page)
     {
@@ -167,6 +173,10 @@ class Pdf
         $imagick->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
 
         $imagick->setFormat($this->determineOutputFormat($pathToImage));
+
+        if($this->settings) {
+            $imagick = $this->settings($imagick);
+        }
 
         return $imagick;
     }

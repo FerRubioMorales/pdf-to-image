@@ -1,6 +1,6 @@
 <?php
 
-namespace Spatie\PdfToImage\Exceptions;
+namespace Bnb\PdfToImage\Exceptions;
 
 class PageDoesNotExist extends \Exception
 {
