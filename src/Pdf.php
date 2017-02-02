@@ -18,24 +18,59 @@ class Pdf
 
     protected $validOutputFormats = ['jpg', 'jpeg', 'png'];
 
-    protected $settings;
+    /** @var callable */
+    protected $beforeSettings;
+
+    /** @var callable */
+    protected $afterSettings;
 
 
     /**
      * @param string   $pdfFile The path to the pdffile.
      *
-     * @param callable $settings A callback that takes the Imagick object as parameter and returns it
+     * @param callable $beforeSettings A callback that takes the Imagick object as parameter and returns it
+     * @param callable $afterSettings A callback that takes the Imagick object as parameter and returns it
      *
      * @throws PdfDoesNotExist
      */
-    public function __construct($pdfFile, callable $settings = null)
+    public function __construct($pdfFile, callable $beforeSettings = null, callable $afterSettings = null)
     {
         if (! file_exists($pdfFile)) {
             throw new PdfDoesNotExist();
         }
 
         $this->pdfFile = $pdfFile;
-        $this->settings = $settings;
+        $this->beforeSettings = $beforeSettings;
+        $this->afterSettings = $afterSettings;
+    }
+
+
+    /**
+     * Set the callback that takes the Imagick object as parameter and returns it before the image read
+     *
+     * @param callable $settings
+     *
+     * @return $this
+     */
+    public function setBeforeSettings(callable $settings)
+    {
+        $this->beforeSettings = $settings;
+
+        return $this;
+    }
+
+    /**
+     * Set the callback that takes the Imagick object as parameter and returns it after the image read
+     *
+     * @param callable $settings
+     *
+     * @return $this
+     */
+    public function setAfterSettings(callable $settings)
+    {
+        $this->afterSettings = $settings;
+
+        return $this;
     }
 
     /**
@@ -168,14 +203,18 @@ class Pdf
 
         $imagick->setResolution($this->resolution, $this->resolution);
 
+        if($this->beforeSettings) {
+            $imagick = ($this->beforeSettings)($imagick);
+        }
+
         $imagick->readImage(sprintf('%s[%s]', $this->pdfFile, $this->page - 1));
 
         $imagick->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
 
         $imagick->setFormat($this->determineOutputFormat($pathToImage));
 
-        if($this->settings) {
-            $imagick = $this->settings($imagick);
+        if($this->afterSettings) {
+            $imagick = ($this->afterSettings)($imagick);
         }
 
         return $imagick;

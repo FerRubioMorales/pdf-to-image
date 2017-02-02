@@ -43,6 +43,25 @@ $pdf->setOutputFormat('png')
     ->saveImage($pathToWhereImageShouldBeStored); //the output wil be a png, no matter what
 ```
 
+You can configure custom settings:
+```php
+$beforeImageReadSettings = function (\Imagick $imagick) {
+    $imagick->setColorspace(\Imagick::COLORSPACE_SRGB);
+
+    return $imagick;
+};
+
+$beforeImageWriteSettings = function (\Imagick $imagick) {
+    $imagick->resizeImage(1024, 1024, \Imagick::FILTER_LANCZOS, 0, true);
+    $imagick->setImageColorspace(\Imagick::COLORSPACE_GRAY);
+
+    return $imagick;
+};
+
+$pdf = new Pdf($this->testFile, $beforeImageReadSettings, $beforeImageWriteSettings)
+    ->saveImage($pathToWhereImageShouldBeStored); //the output will be resized to a grayscale image with a best-fit dimension of 1024x1024
+```
+
 ## Change log
 
 Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
