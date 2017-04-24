@@ -25,7 +25,7 @@ $pdf->saveImage($pathToWhereImageShouldBeStored);
 If the path you pass to `saveImage` has the extensions  `jpg`, `jpeg`, or `png` the image will be saved in that format.
 Otherwise the output will be a jpg.
 
-##Other methods
+## Other methods
 You can get the total number of pages in the pdf:
 ```php
 $pdf->getNumberOfPages(); //returns an int
@@ -43,15 +43,15 @@ $pdf->setOutputFormat('png')
     ->saveImage($pathToWhereImageShouldBeStored); //the output wil be a png, no matter what
 ```
 
-You can configure custom settings:
+You can configure custom settings (where page is the page number) :
 ```php
-$beforeImageReadSettings = function (\Imagick $imagick) {
+$beforeImageReadSettings = function (\Imagick $imagick, $page) {
     $imagick->setColorspace(\Imagick::COLORSPACE_SRGB);
 
     return $imagick;
 };
 
-$beforeImageWriteSettings = function (\Imagick $imagick) {
+$beforeImageWriteSettings = function (\Imagick $imagick, $page) {
     $imagick->resizeImage(1024, 1024, \Imagick::FILTER_LANCZOS, 0, true);
     $imagick->setImageColorspace(\Imagick::COLORSPACE_GRAY);
 

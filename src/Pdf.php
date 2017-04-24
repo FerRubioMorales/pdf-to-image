@@ -3,18 +3,23 @@
 namespace Bnb\PdfToImage;
 
 use Bnb\PdfToImage\Exceptions\InvalidFormat;
-use Bnb\PdfToImage\Exceptions\PdfDoesNotExist;
 use Bnb\PdfToImage\Exceptions\PageDoesNotExist;
+use Bnb\PdfToImage\Exceptions\PdfDoesNotExist;
 
 class Pdf
 {
+
     protected $pdfFile;
 
     protected $resolution = 144;
 
     protected $outputFormat = '';
 
+    protected $pages = 0;
+
     protected $page = 1;
+
+    protected $imagick;
 
     protected $validOutputFormats = ['jpg', 'jpeg', 'png'];
 
@@ -26,19 +31,30 @@ class Pdf
 
 
     /**
-     * @param string   $pdfFile The path to the pdffile.
+     * @param string   $pdfFile        The path or URL to the PDF file.
      *
      * @param callable $beforeSettings A callback that takes the Imagick object as parameter and returns it
-     * @param callable $afterSettings A callback that takes the Imagick object as parameter and returns it
+     * @param callable $afterSettings  A callback that takes the Imagick object as parameter and returns it
      *
      * @throws PdfDoesNotExist
      */
     public function __construct($pdfFile, callable $beforeSettings = null, callable $afterSettings = null)
     {
-        if (! file_exists($pdfFile)) {
+        if ( ! filter_var($pdfFile, FILTER_VALIDATE_URL) && ! file_exists($pdfFile)) {
             throw new PdfDoesNotExist();
         }
 
+        if (filter_var($pdfFile, FILTER_VALIDATE_URL)) {
+            if ( ! ($file = tempnam(sys_get_temp_dir(), 'urltopdf'))) {
+                throw new PdfDoesNotExist();
+            }
+
+            file_put_contents($file, file_get_contents($pdfFile));
+
+            $pdfFile = $file;
+        }
+
+        $this->imagick = new \Imagick($pdfFile);
         $this->pdfFile = $pdfFile;
         $this->beforeSettings = $beforeSettings;
         $this->afterSettings = $afterSettings;
@@ -59,6 +75,7 @@ class Pdf
         return $this;
     }
 
+
     /**
      * Set the callback that takes the Imagick object as parameter and returns it after the image read
      *
@@ -72,6 +89,7 @@ class Pdf
 
         return $this;
     }
+
 
     /**
      * Set the raster resolution.
@@ -87,6 +105,7 @@ class Pdf
         return $this;
     }
 
+
     /**
      * Set the output format.
      *
@@ -98,14 +117,15 @@ class Pdf
      */
     public function setOutputFormat($outputFormat)
     {
-        if (! $this->isValidOutputFormat($outputFormat)) {
-            throw new InvalidFormat('Format '.$outputFormat.' is not supported');
+        if ( ! $this->isValidOutputFormat($outputFormat)) {
+            throw new InvalidFormat('Format ' . $outputFormat . ' is not supported');
         }
 
         $this->outputFormat = $outputFormat;
 
         return $this;
     }
+
 
     /**
      * Determine if the given format is a valid output format.
@@ -119,6 +139,7 @@ class Pdf
         return in_array($outputFormat, $this->validOutputFormats);
     }
 
+
     /**
      * Set the page number that should be rendered.
      *
@@ -131,13 +152,14 @@ class Pdf
     public function setPage($page)
     {
         if ($page > $this->getNumberOfPages()) {
-            throw new PageDoesNotExist('Page '.$page.' does not exist');
+            throw new PageDoesNotExist('Page ' . $page . ' does not exist');
         }
 
         $this->page = $page;
 
         return $this;
     }
+
 
     /**
      * Get the number of pages in the pdf file.
@@ -146,8 +168,13 @@ class Pdf
      */
     public function getNumberOfPages()
     {
-        return (new \Imagick($this->pdfFile))->getNumberImages();
+        if ($this->pages != 0) {
+            return $this->pages;
+        }
+
+        return $this->pages = $this->imagick->getNumberImages();
     }
+
 
     /**
      * Save the image to the given path.
@@ -162,6 +189,7 @@ class Pdf
 
         return file_put_contents($pathToImage, $imageData) === false ? false : true;
     }
+
 
     /**
      * Save the file as images to the given directory.
@@ -190,6 +218,7 @@ class Pdf
         }, range(1, $numberOfPages));
     }
 
+
     /**
      * Return raw image data.
      *
@@ -199,26 +228,25 @@ class Pdf
      */
     public function getImageData($pathToImage)
     {
-        $imagick = new \Imagick();
+        $this->imagick->setResolution($this->resolution, $this->resolution);
 
-        $imagick->setResolution($this->resolution, $this->resolution);
-
-        if($this->beforeSettings) {
-            $imagick = ($this->beforeSettings)($imagick);
+        if ($this->beforeSettings) {
+            $this->imagick = ($this->beforeSettings)($this->imagick, $this->page);
         }
 
-        $imagick->readImage(sprintf('%s[%s]', $this->pdfFile, $this->page - 1));
+        $this->imagick->readImage(sprintf('%s[%s]', $this->pdfFile, $this->page - 1));
 
-        $imagick->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
+        $this->imagick->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
 
-        $imagick->setFormat($this->determineOutputFormat($pathToImage));
+        $this->imagick->setFormat($this->determineOutputFormat($pathToImage));
 
-        if($this->afterSettings) {
-            $imagick = ($this->afterSettings)($imagick);
+        if ($this->afterSettings) {
+            $this->imagick = ($this->afterSettings)($this->imagick, $this->page);
         }
 
-        return $imagick;
+        return $this->imagick;
     }
+
 
     /**
      * Determine in which format the image must be rendered.
@@ -237,7 +265,7 @@ class Pdf
 
         $outputFormat = strtolower($outputFormat);
 
-        if (! $this->isValidOutputFormat($outputFormat)) {
+        if ( ! $this->isValidOutputFormat($outputFormat)) {
             $outputFormat = 'jpg';
         }
 

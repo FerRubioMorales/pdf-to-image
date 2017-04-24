@@ -10,27 +10,29 @@ use Bnb\PdfToImage\Pdf;
 class PdfTest extends \PHPUnit_Framework_TestCase
 {
 
-    /**
-     * @var string
-     */
     protected $testFile;
 
+    protected $outputDir;
+
     protected $outputFile;
+
+    protected $testUrl = 'https://github.com/bnbwebexpertise/pdf-to-image/raw/master/tests/files/multipage-test.pdf';
 
 
     public function setUp()
     {
         parent::setUp();
 
-        $this->testFile = __DIR__ . '/files/test.pdf';
-        $this->outputFile = __DIR__ . '/files/test.png';
-        $this->multipageTestFile = __DIR__ . '/files/multipage-test.pdf';
+        $this->outputDir = __DIR__ . '/files';
+        $this->testFile = $this->outputDir . '/test.pdf';
+        $this->outputFile = $this->outputDir . '/test.png';
+        $this->multipageTestFile = $this->outputDir . '/multipage-test.pdf';
     }
 
 
     public function tearDown()
     {
-        if(file_exists($this->outputFile)) {
+        if (file_exists($this->outputFile)) {
             @unlink($this->outputFile);
         }
     }
@@ -136,5 +138,29 @@ class PdfTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($pdf->saveImage($this->outputFile));
         $this->assertSame(1024, getimagesize($this->outputFile)[1]);
+    }
+
+
+    /** @test */
+    public function it_will_convert_from_url()
+    {
+        $pdf = new Pdf($this->testUrl);
+        $pdf->setResolution(300);
+        $pdf->setOutputFormat('png');
+
+        $pdf->setAfterSettings(function (\Imagick $imagick, $page) {
+            $imagick->resizeImage(max(128, 512 / $page), max(128, 512 / $page), \Imagick::FILTER_LANCZOS, 0, true);
+
+            return $imagick;
+        });
+
+        $pages = $pdf->saveAllPagesAsImages($this->outputDir, 'url-');
+
+        $this->assertSame(512, getimagesize($this->outputDir . '/url-1.png')[0]);
+        $this->assertSame(256, getimagesize($this->outputDir . '/url-2.png')[0]);
+
+        foreach ($pages as $page) {
+            @unlink($page);
+        }
     }
 }
