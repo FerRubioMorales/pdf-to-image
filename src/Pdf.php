@@ -54,7 +54,7 @@ class Pdf
             $pdfFile = $file;
         }
 
-        $this->imagick = new \Imagick($pdfFile);
+        $this->imagick = new \Imagick();
         $this->pdfFile = $pdfFile;
         $this->beforeSettings = $beforeSettings;
         $this->afterSettings = $afterSettings;
@@ -171,6 +171,14 @@ class Pdf
         if ($this->pages != 0) {
             return $this->pages;
         }
+
+        $this->imagick->setResolution($this->resolution, $this->resolution);
+
+        if ($this->beforeSettings) {
+            $this->imagick = ($this->beforeSettings)($this->imagick, $this->page);
+        }
+
+        $this->imagick->readImage($this->pdfFile);
 
         return $this->pages = $this->imagick->getNumberImages();
     }
