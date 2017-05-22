@@ -10,7 +10,7 @@ You should have [Imagick](http://php.net/manual/en/imagick.setresolution.php) an
 
 The package can be installed via composer:
 ``` bash
-$ composer require bnb/pdf-to-image
+$ composer require bnbwebexpertise/pdf-to-image
 ```
 
 ## Usage
