@@ -5,6 +5,7 @@ namespace Bnb\PdfToImage;
 use Bnb\PdfToImage\Exceptions\InvalidFormat;
 use Bnb\PdfToImage\Exceptions\PageDoesNotExist;
 use Bnb\PdfToImage\Exceptions\PdfDoesNotExist;
+use Smalot\PdfParser\Parser;
 
 class Pdf
 {
@@ -172,10 +173,17 @@ class Pdf
             return $this->pages;
         }
 
-        $this->imagick->setResolution($this->resolution, $this->resolution);
+        try {
+            $parser = new Parser();
+            $pdf = $parser->parseFile($this->pdfFile);
+            $details = $pdf->getDetails();
 
-        if ($this->beforeSettings) {
-            $this->imagick = ($this->beforeSettings)($this->imagick, $this->page);
+            if ( ! empty($details['Pages'])) {
+                return $this->pages = $details['Pages'];
+            }
+
+            return $this->pages = count($pdf->getPages());
+        } catch (\Exception $e) {
         }
 
         $this->imagick->readImage($this->pdfFile);
