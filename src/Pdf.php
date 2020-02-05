@@ -246,19 +246,11 @@ class Pdf
     {
         $this->imagick->setResolution($this->resolution, $this->resolution);
 
-        if ($this->beforeSettings) {
-            $this->imagick = ($this->beforeSettings)($this->imagick, $this->page);
-        }
-
         $this->imagick->readImage(sprintf('%s[%s]', $this->pdfFile, $this->page - 1));
 
         $this->imagick->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
 
         $this->imagick->setFormat($this->determineOutputFormat($pathToImage));
-
-        if ($this->afterSettings) {
-            $this->imagick = ($this->afterSettings)($this->imagick, $this->page);
-        }
 
         return $this->imagick;
     }
