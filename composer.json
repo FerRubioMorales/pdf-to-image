@@ -1,5 +1,5 @@
 {
-    "name": "bnbwebexpertise/pdf-to-image",
+    "name": "FerRubioMorales/pdf-to-image",
     "description": "Convert a pdf to an image with Imagick extension. Forked from spatie/pdf-to-image",
     "keywords": [
         "bnbwebexpertise",
@@ -8,12 +8,12 @@
         "convert",
         "image"
     ],
-    "homepage": "https://github.com/bnbwebexpertise/pdf-to-image",
+    "homepage": "https://github.com/FerRubioMorales/pdf-to-image",
     "license": "MIT",
     "authors": [
         {
-            "name": "Jeremy Gaulin",
-            "email": "jeremy@bnb.re",
+            "name": "Fernando Rubio",
+            "email": "cronosmen@gmail.com",
             "role": "Developer"
         }
     ],
